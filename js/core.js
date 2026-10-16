@@ -76,11 +76,15 @@ const Voice = {
     }
     this.voice = vs[0] || null;
   },
-  say(text) {
+  kind: null,
+  // kind 'hover' never cuts off a direction that is still being read
+  say(text, kind = 'prompt') {
     if (!text || Sfx.muted() || !('speechSynthesis' in window)) return;
     try {
+      if (kind === 'hover' && this.kind === 'prompt' && speechSynthesis.speaking) return;
+      this.kind = kind;
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text.replace(/[\u{1F300}-\u{1FAFF}☀-➿]/gu, ''));
+      const u = new SpeechSynthesisUtterance(stripIcons(text));
       if (!this.voice) this.pickVoice();
       if (this.voice) u.voice = this.voice;
       u.rate = 0.88; u.pitch = 1.08;
@@ -90,6 +94,26 @@ const Voice = {
   stop() { try { speechSynthesis.cancel(); } catch (e) {} }
 };
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => Voice.pickVoice();
+
+function stripIcons(s) {
+  return (s || '').replace(/[\u{1F000}-\u{1FAFF}\u2190-\u21FF\u2300-\u27BF\u2B00-\u2BFF\uFE0F\u200D\uFF0B\u2039\u203A\u25A0-\u25FF]/gu, '').replace(/\s+/g, ' ').trim();
+}
+
+/* Hover-to-hear: resting the pointer on any button, link or [data-say] label
+   reads it aloud, so pre-readers never have to read a label. Game pieces whose
+   names would give away the answer are skipped. */
+const SAY_SKIP = '.key, .app-grid .app-tile, .hunt-item, .tool-choice, .bubble, .egg, .food, .crayon, .swatch, .bc-swatch, .stamp-btn, .size-btn, .bc-sticker, .thumb, .part, input, textarea';
+(function hoverToHear() {
+  let timer, current;
+  document.addEventListener('pointerover', e => {
+    const el = e.target.closest('[data-say], button, a');
+    if (el === current) return;
+    current = el; clearTimeout(timer);
+    if (!el || el.matches(SAY_SKIP) || el.closest('[data-nosay], .teacher')) return;
+    const text = el.dataset.say || stripIcons(el.textContent);
+    if (text) timer = setTimeout(() => Voice.say(text, 'hover'), 450);
+  });
+})();
 
 /* ---------- effects ---------- */
 function confetti(count = 40) {
@@ -280,12 +304,11 @@ function runGame(id, weekNum, mount) {
   const stage = h('div', { class: 'stage stage-' + id });
   const backHref = week ? '#/week/' + week.n : '#/';
   const bar = h('div', { class: 'game-bar', style: { '--wk': week ? week.color : '#017EA7' } },
-    h('a', { class: 'back-btn', href: backHref, 'aria-label': 'Back' }, '⬅'),
+    h('a', { class: 'back-btn', href: backHref, 'aria-label': 'Back', 'data-say': 'Go back' }, '⬅'),
     h('div', { class: 'game-title' }, h('span', { class: 'game-emoji' }, def.emoji), def.title),
-    h('div', { class: 'prompt' }, sayBtn, promptText),
+    h('div', { class: 'prompt', 'data-nosay': '', onclick: () => Voice.say(lastSaid) }, sayBtn, promptText),
     dots);
   mount.append(h('section', { class: 'game' }, bar, stage));
-  sayBtn.addEventListener('click', () => Voice.say(lastSaid));
 
   const api = {
     stage, week,
@@ -319,10 +342,10 @@ function runGame(id, weekNum, mount) {
           h('h2', null, message),
           h('p', null, 'You earned a star!'),
           h('div', { class: 'win-actions' },
-            opts.keepGoing ? h('button', { class: 'big-btn', onclick: () => { overlay.remove(); finished = false; opts.keepGoing(); } }, '✏️ Keep going')
-              : h('button', { class: 'big-btn', onclick: () => App.route(true) }, '🔁 Again'),
-            next ? h('a', { class: 'big-btn go', href: `#/play/${next}/${week.n}` }, 'Next ➡') : null,
-            h('a', { class: 'big-btn alt', href: backHref }, week ? `Week ${week.n} 🏠` : '🏠'))));
+            opts.keepGoing ? h('button', { class: 'big-btn', 'data-say': 'Keep working on it', onclick: () => { overlay.remove(); finished = false; opts.keepGoing(); } }, '✏️ Keep going')
+              : h('button', { class: 'big-btn', 'data-say': 'Play again', onclick: () => App.route(true) }, '🔁 Again'),
+            next ? h('a', { class: 'big-btn go', href: `#/play/${next}/${week.n}`, 'data-say': 'Next game: ' + Games[next].title }, 'Next ➡') : null,
+            h('a', { class: 'big-btn alt', href: backHref, 'data-say': week ? `Back to week ${week.n}` : 'Home' }, week ? `Week ${week.n} 🏠` : '🏠'))));
       stage.append(overlay);
       Voice.say(message + ' You earned a star!');
     }

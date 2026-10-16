@@ -28,7 +28,7 @@ registerGame({
       const n = w.games.filter(g => Progress.stars(g) > 0).length;
       return h('div', { class: 'cert-badge' + (n ? ' on' : '') }, h('span', null, w.emoji), 'Week ' + w.n);
     });
-    const print = h('button', { class: 'big-btn go no-print' }, '🖨️ Print');
+    const print = h('button', { class: 'big-btn go no-print', 'data-say': 'Print. Ask a teacher first.' }, '🖨️ Print');
     print.addEventListener('click', () => window.print());
     api.stage.append(h('div', { class: 'cert-wrap' },
       h('div', { class: 'cert' },

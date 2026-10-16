@@ -226,7 +226,7 @@ function drawingPad(api, { onDraw, height } = {}) {
     b.addEventListener('click', () => { stamp = s; select(b); Sfx.click(); });
     return b;
   });
-  const clear = h('button', { class: 'tool-btn', 'aria-label': 'Clear' }, '🗑️');
+  const clear = h('button', { class: 'tool-btn', 'aria-label': 'Clear', 'data-say': 'Erase everything' }, '🗑️');
   clear.addEventListener('click', () => { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); Sfx.oops(); });
   function select(b) {
     [...sw, ...stamps].forEach(x => x.classList.remove('on'));
@@ -283,7 +283,7 @@ registerGame({
     const pad = drawingPad(api, {
       onDraw: () => { done.classList.add('ready'); }
     });
-    const done = h('button', { class: 'big-btn go done-btn' }, '✓ I’m done!');
+    const done = h('button', { class: 'big-btn go done-btn', 'data-say': 'I am done' }, '✓ I’m done!');
     done.addEventListener('click', () => api.win('What a great picture!'));
     pad.el.querySelector('.pad-tools').append(done);
     api.stage.append(pad.el);

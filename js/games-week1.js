@@ -6,15 +6,15 @@ function choiceGame(api, items, intro, winMsg) {
   let i = 0;
   const scene = h('div', { class: 'choice-scene' });
   const text = h('div', { class: 'choice-text' });
-  const yes = h('button', { class: 'choice-btn yes' }, h('span', null, '👍'), 'Good choice');
-  const no = h('button', { class: 'choice-btn no' }, h('span', null, '👎'), 'Not good');
+  const yes = h('button', { class: 'choice-btn yes', 'data-say': 'Thumbs up. Good choice.' }, h('span', null, '👍'), 'Good choice');
+  const no = h('button', { class: 'choice-btn no', 'data-say': 'Thumbs down. Not a good choice.' }, h('span', null, '👎'), 'Not good');
   const card = h('div', { class: 'choice-card' }, scene, text);
   api.stage.append(h('div', { class: 'choice-wrap' }, card, h('div', { class: 'choice-btns' }, no, yes)));
   let locked = false;
 
   function show(prefix) {
     const it = list[i];
-    scene.textContent = it.scene; text.textContent = it.text;
+    scene.textContent = it.scene; text.textContent = it.text; card.dataset.say = it.text;
     card.classList.remove('right', 'wrong'); card.classList.add('enter');
     setTimeout(() => card.classList.remove('enter'), 400);
     api.progress(i, list.length);

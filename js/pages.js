@@ -1,22 +1,16 @@
 /* Pages: home, week, game player and the teacher guide. Hash routes:
    #/  ·  #/week/3  ·  #/play/letterpop/3  ·  #/teacher */
 
-function hoverSpeak(el, text) {
-  let t;
-  el.addEventListener('pointerenter', () => { clearTimeout(t); t = setTimeout(() => Voice.say(text), 350); });
-  el.addEventListener('pointerleave', () => clearTimeout(t));
-}
 function weekDone(w) { return w.games.filter(g => Progress.stars(g) > 0).length; }
 
 function gameCard(id, weekN) {
   const g = Games[id];
   const stars = Progress.stars(id);
-  const a = h('a', { class: 'game-card', href: `#/play/${id}/${weekN}` },
+  const a = h('a', { class: 'game-card', href: `#/play/${id}/${weekN}`, 'data-say': g.title },
     h('span', { class: 'gc-emoji' }, g.emoji),
     h('span', { class: 'gc-title' }, g.title),
     h('span', { class: 'gc-blurb' }, g.blurb),
     h('span', { class: 'gc-stars' }, stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? ' +' + (stars - 3) : '') : '☆'));
-  hoverSpeak(a, g.title);
   return a;
 }
 
@@ -27,19 +21,16 @@ function homePage(mount) {
       h('h1', null, name ? `Hi, ${name}! 👋` : 'Welcome to the Computer Lab! 👋'),
       h('p', { class: 'hero-sub' }, 'Pick your week and play!')),
     h('div', { class: 'habits' }, HABITS.map(([e, t]) => {
-      const d = h('div', { class: 'habit' }, h('span', null, e), t);
-      hoverSpeak(d, t);
-      return d;
+      return h('div', { class: 'habit', 'data-say': t }, h('span', null, e), t);
     })));
   const grid = h('div', { class: 'week-grid' }, WEEKS.map(w => {
     const done = weekDone(w);
-    const a = h('a', { class: 'week-card', href: '#/week/' + w.n, style: { '--wk': w.color } },
+    const a = h('a', { class: 'week-card', href: '#/week/' + w.n, style: { '--wk': w.color }, 'data-say': `Week ${w.n}. ${w.kidTitle}` },
       h('span', { class: 'wc-num' }, 'Week ' + w.n),
       h('span', { class: 'wc-emoji' }, w.emoji),
       h('span', { class: 'wc-title' }, w.kidTitle),
       h('span', { class: 'wc-progress' }, w.games.map(g => h('i', { class: Progress.stars(g) ? 'on' : '' }))),
       done === w.games.length ? h('span', { class: 'wc-badge' }, '🏅') : null);
-    hoverSpeak(a, `Week ${w.n}. ${w.kidTitle}`);
     return a;
   }));
   mount.append(hi, grid,
@@ -52,19 +43,19 @@ function weekPage(mount, n) {
   const prev = WEEKS.find(x => x.n === n - 1), next = WEEKS.find(x => x.n === n + 1);
   mount.append(...[
     h('div', { class: 'week-head', style: { '--wk': w.color } },
-      h('a', { class: 'back-btn', href: '#/', 'aria-label': 'Home' }, '🏠'),
+      h('a', { class: 'back-btn', href: '#/', 'aria-label': 'Home', 'data-say': 'Home' }, '🏠'),
       h('div', { class: 'wh-emoji' }, w.emoji),
       h('div', null, h('div', { class: 'wh-num' }, 'Week ' + w.n), h('h1', null, w.kidTitle))),
     h('div', { class: 'words' }, h('span', { class: 'words-label' }, 'Our words:'), w.words.map(word => {
-      const b = h('button', { class: 'word-chip' }, '🔊 ' + word);
+      const b = h('button', { class: 'word-chip', 'data-nosay': '' }, '🔊 ' + word);
       b.addEventListener('click', () => Voice.say(word));
       return b;
     })),
     h('div', { class: 'game-grid' }, w.games.map(id => gameCard(id, w.n))),
     w.freeChoice ? h('div', { class: 'free' }, h('h2', null, '🎈 Free choice'), h('div', { class: 'game-grid small' }, w.freeChoice.map(id => gameCard(id, w.n)))) : null,
     h('div', { class: 'week-nav' },
-      prev ? h('a', { class: 'big-btn alt', href: '#/week/' + prev.n }, '⬅ Week ' + prev.n) : h('span'),
-      next ? h('a', { class: 'big-btn alt', href: '#/week/' + next.n }, 'Week ' + next.n + ' ➡') : h('span'))
+      prev ? h('a', { class: 'big-btn alt', href: '#/week/' + prev.n, 'data-say': 'Go to week ' + prev.n }, '⬅ Week ' + prev.n) : h('span'),
+      next ? h('a', { class: 'big-btn alt', href: '#/week/' + next.n, 'data-say': 'Go to week ' + next.n }, 'Week ' + next.n + ' ➡') : h('span'))
   ].filter(Boolean));
   Voice.say(`Week ${w.n}. ${w.kidTitle}`);
 }

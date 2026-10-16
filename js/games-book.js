@@ -57,11 +57,12 @@ function loadBook() {
 }
 function saveBook(book) {
   const ok = Store.set('book', book);
-  if (!ok) toast('This Chromebook is out of room. Try a shorter recording.');
+  if (!ok) toast('This Chromebook is out of room. Ask a teacher for help.');
   return ok;
 }
 function toast(msg) {
   const t = h('div', { class: 'toast' }, msg);
+  Voice.say(msg);
   document.body.append(t);
   setTimeout(() => t.remove(), 3500);
 }
@@ -77,7 +78,7 @@ function pageEl(page, n) {
     page.text ? h('div', { class: 'pg-text' }, page.text) : null,
     h('div', { class: 'pg-media' }, media.map(src => h('img', { src, alt: '' }))),
     !media.length && !page.text ? h('div', { class: 'pg-empty' }, 'Empty page') : null,
-    page.audio ? h('button', { class: 'pg-audio', 'aria-label': 'Play recording', onclick: e => { e.stopPropagation(); new Audio(page.audio).play(); } }, '🔊') : null,
+    page.audio ? h('button', { class: 'pg-audio', 'aria-label': 'Play recording', 'data-say': 'Listen to your voice', onclick: e => { e.stopPropagation(); new Audio(page.audio).play(); } }, '🔊') : null,
     h('div', { class: 'pg-num' }, n));
   return el;
 }
@@ -94,23 +95,24 @@ registerGame({
     api.stage.append(view);
 
     // Screen 1: library
-    const newBtn = h('button', { class: 'bc-new' }, h('span', null, '＋'), 'New Book');
+    const newBtn = h('button', { class: 'bc-new', 'data-say': 'New book' }, h('span', null, '＋'), 'New Book');
     const lib = h('div', { class: 'bc-lib' }, h('div', { class: 'bc-libbar' }, '📚 My Books'), h('div', { class: 'bc-shelf' }, newBtn));
     // Screen 2: shapes
     const shapes = h('div', { class: 'bc-shapes' }, ['portrait', 'square', 'landscape'].map(s => {
       const b = h('button', { class: 'bc-shape ' + s }, h('span'), s === 'portrait' ? 'Tall' : s === 'square' ? 'Square' : 'Wide');
+      b.dataset.say = (s === 'portrait' ? 'Tall' : s === 'square' ? 'Square' : 'Wide') + ' book';
       b.addEventListener('click', () => { if (step === 1) { Sfx.click(); go(2); } });
       return b;
     }));
     // Screen 3: editor
     const titleIn = h('textarea', { class: 'bc-input', maxlength: 30, rows: 2, 'aria-label': 'Title', spellcheck: 'false' });
-    const titleBox = h('div', { class: 'bc-box title-box' }, h('span', { class: 'bc-ph' }, 'Click to type a title'), titleIn);
+    const titleBox = h('div', { class: 'bc-box title-box', 'data-say': 'Title box. Your title goes here.' }, h('span', { class: 'bc-ph' }, 'Click to type a title'), titleIn);
     const nameIn = h('input', { class: 'bc-input', maxlength: 20, 'aria-label': 'Your name', spellcheck: 'false' });
-    const nameBox = h('div', { class: 'bc-box name-box' }, h('span', { class: 'bc-ph' }, 'Click to type your name'), nameIn);
+    const nameBox = h('div', { class: 'bc-box name-box', 'data-say': 'Name box. Your name goes here.' }, h('span', { class: 'bc-ph' }, 'Click to type your name'), nameIn);
     const stickerZone = h('div', { class: 'bc-stickers' });
     const page = h('div', { class: 'bc-cover' }, titleBox, stickerZone, nameBox);
-    const smaller = h('button', { class: 'bc-tool', 'aria-label': 'Smaller text' }, h('small', null, 'A'));
-    const bigger = h('button', { class: 'bc-tool', 'aria-label': 'Bigger text' }, h('big', null, 'A'));
+    const smaller = h('button', { class: 'bc-tool', 'aria-label': 'Smaller text', 'data-say': 'Little A. Makes the words smaller.' }, h('small', null, 'A'));
+    const bigger = h('button', { class: 'bc-tool', 'aria-label': 'Bigger text', 'data-say': 'Big A. Makes the words bigger.' }, h('big', null, 'A'));
     const swatches = h('div', { class: 'bc-swatches' }, COVER_COLORS.map(c => {
       const b = h('button', { class: 'bc-swatch', style: { background: c }, 'aria-label': 'cover color' });
       b.addEventListener('click', () => { if (step < 8) return; book.color = c; page.style.background = c; Sfx.click(); if (step === 8) go(9); });
@@ -125,15 +127,15 @@ registerGame({
       });
       return b;
     }));
-    const saveBtn = h('button', { class: 'bc-save' }, '💾 Save');
+    const saveBtn = h('button', { class: 'bc-save', 'data-say': 'Save' }, '💾 Save');
     const hint = h('div', { class: 'bc-hint' });
-    const doneBtn = h('button', { class: 'big-btn go bc-done' }, '✓ Done');
+    const doneBtn = h('button', { class: 'big-btn go bc-done', 'data-say': 'Done' }, '✓ Done');
     const editor = h('div', { class: 'bc-editor' },
       h('div', { class: 'bc-toolbar' },
-        h('div', { class: 'bc-group' }, h('span', { class: 'bc-label' }, 'Text size'), smaller, bigger),
-        h('div', { class: 'bc-group' }, h('span', { class: 'bc-label' }, 'Color'), swatches),
+        h('div', { class: 'bc-group' }, h('span', { class: 'bc-label', 'data-say': 'Text size' }, 'Text size'), smaller, bigger),
+        h('div', { class: 'bc-group' }, h('span', { class: 'bc-label', 'data-say': 'Cover color' }, 'Color'), swatches),
         saveBtn),
-      h('div', { class: 'bc-main' }, page, h('div', { class: 'bc-side' }, hint, doneBtn, h('span', { class: 'bc-label' }, 'Pictures'), stickerBar)));
+      h('div', { class: 'bc-main' }, page, h('div', { class: 'bc-side' }, hint, doneBtn, h('span', { class: 'bc-label', 'data-say': 'Pictures' }, 'Pictures'), stickerBar)));
 
     function setSize(i) { book.titleSize = SIZES[i]; titleIn.style.fontSize = SIZES[i] + 'px'; }
     let sizeI = 1; setSize(sizeI);
@@ -185,6 +187,7 @@ registerGame({
       const S = STEPS[n];
       S.t.classList.add('coach');
       hint.innerHTML = ''; if (S.hint) hint.append(...S.hint.map(x => typeof x === 'string' ? h('span', null, x) : x));
+      hint.dataset.say = S.hint ? (n === 4 ? 'You can type: All About Me' : 'Your name is ' + name + '. Look at your name card.') : '';
       doneBtn.style.display = S.done ? '' : 'none';
       api.progress(Math.min(n, 10) - (n > 2 ? 1 : 0), 10);
       api.say(S.say);
@@ -254,13 +257,13 @@ function bookGame(api, mode) {
   const taskList = h('ul', { class: 'tasks' });
   const thumbs = h('div', { class: 'thumbs' });
   const main = h('div', { class: 'bk-main' });
-  const addBtn = h('button', { class: 'bk-tool', 'aria-label': 'Add' }, '＋');
-  const playBtn = h('button', { class: 'bk-tool play', 'aria-label': 'Play' }, '▶');
-  const newPage = h('button', { class: 'bk-newpage' }, toolBtnFace(TOOL_BUTTONS[4]), 'New page');
+  const addBtn = h('button', { class: 'bk-tool', 'aria-label': 'Add', 'data-say': 'Plus. Add a picture or your voice.' }, '＋');
+  const playBtn = h('button', { class: 'bk-tool play', 'aria-label': 'Play', 'data-say': 'Play your book' }, '▶');
+  const newPage = h('button', { class: 'bk-newpage', 'data-say': 'New page' }, toolBtnFace(TOOL_BUTTONS[4]), 'New page');
   const menu = h('div', { class: 'bk-menu hidden' });
   api.stage.append(h('div', { class: 'bk' },
-    h('div', { class: 'bk-bar' }, h('span', { class: 'bk-name' }, '📘 ', book.title), h('div', { class: 'bk-bar-right' }, addBtn, playBtn), menu),
-    h('div', { class: 'bk-body' }, h('div', { class: 'bk-side' }, thumbs, newPage), main, h('div', { class: 'bk-tasks' }, h('h4', null, 'My jobs'), taskList))));
+    h('div', { class: 'bk-bar' }, h('span', { class: 'bk-name', 'data-say': 'Your book: ' + book.title }, '📘 ', book.title), h('div', { class: 'bk-bar-right' }, addBtn, playBtn), menu),
+    h('div', { class: 'bk-body' }, h('div', { class: 'bk-side' }, thumbs, newPage), main, h('div', { class: 'bk-tasks' }, h('h4', { 'data-say': 'My jobs' }, 'My jobs'), taskList))));
 
   function tick(id) {
     if (!doneTasks.has(id) && tasks.some(t => t.id === id)) { doneTasks.add(id); Sfx.good(); }
@@ -270,7 +273,7 @@ function bookGame(api, mode) {
   }
   function renderTasks() {
     taskList.innerHTML = '';
-    tasks.forEach(t => taskList.append(h('li', { class: doneTasks.has(t.id) ? 'done' : '' }, h('span', { class: 'box' }, doneTasks.has(t.id) ? '✓' : ''), t.text)));
+    tasks.forEach(t => taskList.append(h('li', { class: doneTasks.has(t.id) ? 'done' : '', 'data-say': stripIcons(t.text) + (doneTasks.has(t.id) ? '. Done!' : '') }, h('span', { class: 'box' }, doneTasks.has(t.id) ? '✓' : ''), t.text)));
   }
   function render() {
     thumbs.innerHTML = '';
@@ -282,7 +285,7 @@ function bookGame(api, mode) {
     });
     main.innerHTML = '';
     main.append(cur === 0 ? coverEl(book) : pageEl(book.pages[cur - 1], cur));
-    if (cur > 0) main.append(h('button', { class: 'bk-del', 'aria-label': 'Delete page', onclick: () => {
+    if (cur > 0) main.append(h('button', { class: 'bk-del', 'aria-label': 'Delete page', 'data-say': 'Throw away this page', onclick: () => {
       if (!confirm('Delete this page?')) return;
       book.pages.splice(cur - 1, 1); cur = Math.min(cur, book.pages.length); saveBook(book); render();
     } }, '🗑️'));
@@ -302,13 +305,13 @@ function bookGame(api, mode) {
     newPage.classList.add('coach'); wiggle(newPage); return true;
   };
   const MENU = [
-    { t: TOOL_BUTTONS[0], label: 'Pen', fn: openPen },
-    { t: TOOL_BUTTONS[1], label: 'Camera', fn: openCamera },
-    { t: TOOL_BUTTONS[2], label: 'Record', fn: openRecorder },
-    { t: TOOL_BUTTONS[5], label: 'Text', fn: openText }
+    { t: TOOL_BUTTONS[0], label: 'Pen', say: 'Pen. Draw a picture.', fn: openPen },
+    { t: TOOL_BUTTONS[1], label: 'Camera', say: 'Camera. Take a photo.', fn: openCamera },
+    { t: TOOL_BUTTONS[2], label: 'Record', say: 'Microphone. Record your voice.', fn: openRecorder },
+    { t: TOOL_BUTTONS[5], label: 'Text', say: 'Text. Type some words.', fn: openText }
   ];
   MENU.forEach(m => {
-    const b = h('button', { class: 'bk-menu-item' }, toolBtnFace(m.t), m.label);
+    const b = h('button', { class: 'bk-menu-item', 'data-say': m.say }, toolBtnFace(m.t), m.label);
     b.addEventListener('click', () => { menu.classList.add('hidden'); m.fn(); });
     menu.append(b);
   });
@@ -330,8 +333,8 @@ function bookGame(api, mode) {
   function openPen() {
     const pad = drawingPad(api);
     let m;
-    const done = h('button', { class: 'big-btn go' }, '✓ Done');
-    const cancel = h('button', { class: 'big-btn alt' }, '✕');
+    const done = h('button', { class: 'big-btn go', 'data-say': 'Done' }, '✓ Done');
+    const cancel = h('button', { class: 'big-btn alt', 'data-say': 'Close' }, '✕');
     done.addEventListener('click', () => {
       if (pad.hasDrawing()) {
         const c = document.createElement('canvas'), s = Math.min(1, 640 / pad.canvas.width);
@@ -353,10 +356,10 @@ function bookGame(api, mode) {
   async function openCamera() {
     const video = h('video', { class: 'cam-video', autoplay: true, playsinline: true, muted: true });
     const shot = h('img', { class: 'cam-shot hidden', alt: '' });
-    const snap = h('button', { class: 'shutter', 'aria-label': 'Take photo' });
-    const retry = h('button', { class: 'big-btn alt hidden' }, '↺ Again');
-    const use = h('button', { class: 'big-btn go hidden' }, '✓ Use it');
-    const cancel = h('button', { class: 'big-btn alt' }, '✕');
+    const snap = h('button', { class: 'shutter', 'aria-label': 'Take photo', 'data-say': 'Take a photo' });
+    const retry = h('button', { class: 'big-btn alt hidden', 'data-say': 'Try again' }, '↺ Again');
+    const use = h('button', { class: 'big-btn go hidden', 'data-say': 'Use this photo' }, '✓ Use it');
+    const cancel = h('button', { class: 'big-btn alt', 'data-say': 'Close' }, '✕');
     let stream = null, data = null;
     const m = modal('📷 Camera', h('div', { class: 'cam' }, video, shot, snap), [cancel, retry, use]);
     const close = () => { stopStream(stream); m.remove(); };
@@ -389,11 +392,11 @@ function bookGame(api, mode) {
   }
 
   async function openRecorder() {
-    const rec = h('button', { class: 'rec-btn', 'aria-label': 'Record' });
+    const rec = h('button', { class: 'rec-btn', 'aria-label': 'Record', 'data-say': 'Red button. Start or stop recording.' });
     const timer = h('div', { class: 'rec-timer' }, 'Click the red button to start');
-    const listen = h('button', { class: 'big-btn hidden' }, '▶ Listen');
-    const keep = h('button', { class: 'big-btn go hidden' }, '✓ Keep it');
-    const cancel = h('button', { class: 'big-btn alt' }, '✕');
+    const listen = h('button', { class: 'big-btn hidden', 'data-say': 'Listen' }, '▶ Listen');
+    const keep = h('button', { class: 'big-btn go hidden', 'data-say': 'Keep it' }, '✓ Keep it');
+    const cancel = h('button', { class: 'big-btn alt', 'data-say': 'Close' }, '✕');
     let stream = null, recorder = null, chunks = [], url = null, data = null, secs = 0, tmr = null;
     const m = modal('🎤 Record', h('div', { class: 'rec' }, rec, timer), [cancel, listen, keep]);
     const close = () => { clearInterval(tmr); if (recorder && recorder.state === 'recording') recorder.stop(); stopStream(stream); m.remove(); };
@@ -418,6 +421,7 @@ function bookGame(api, mode) {
         url = URL.createObjectURL(blob);
         const fr = new FileReader(); fr.onload = () => { data = fr.result; }; fr.readAsDataURL(blob);
         timer.textContent = 'Click Listen to hear it!';
+        Voice.say('Click Listen to hear it. Click Keep it if you like it.');
         [listen, keep].forEach(x => x.classList.remove('hidden'));
       };
       recorder.start(); rec.classList.add('on'); secs = 0;
@@ -434,8 +438,8 @@ function bookGame(api, mode) {
   function openText() {
     const inp = h('textarea', { class: 'txt-in', maxlength: 80, rows: 2, spellcheck: 'false', 'aria-label': 'Words for this page' });
     inp.value = curPage().text || '';
-    const done = h('button', { class: 'big-btn go' }, '✓ Done');
-    const cancel = h('button', { class: 'big-btn alt' }, '✕');
+    const done = h('button', { class: 'big-btn go', 'data-say': 'Done' }, '✓ Done');
+    const cancel = h('button', { class: 'big-btn alt', 'data-say': 'Close' }, '✕');
     const m = modal('T  Type words', inp, [cancel, done]);
     cancel.addEventListener('click', () => m.remove());
     done.addEventListener('click', () => { curPage().text = inp.value.trim(); saveBook(book); m.remove(); render(); });
@@ -447,9 +451,9 @@ function bookGame(api, mode) {
     let p = 0, audio = null;
     const total = book.pages.length + 2; // cover, pages, the end
     const frame = h('div', { class: 'play-frame' });
-    const prev = h('button', { class: 'play-nav prev', 'aria-label': 'Back' }, '‹');
-    const next = h('button', { class: 'play-nav next', 'aria-label': 'Next' }, '›');
-    const close = h('button', { class: 'play-close', 'aria-label': 'Close' }, '✕');
+    const prev = h('button', { class: 'play-nav prev', 'aria-label': 'Back', 'data-say': 'Go back a page' }, '‹');
+    const next = h('button', { class: 'play-nav next', 'aria-label': 'Next', 'data-say': 'Next page' }, '›');
+    const close = h('button', { class: 'play-close', 'aria-label': 'Close', 'data-say': 'Close' }, '✕');
     const ov = h('div', { class: 'play-ov' }, frame, prev, next, close);
     api.stage.append(ov);
     const stopAudio = () => { if (audio) { audio.pause(); audio = null; } };

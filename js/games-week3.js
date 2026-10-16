@@ -183,7 +183,7 @@ registerGame({
     const ROUNDS = 3;
     let round = 0, idx = 0, busy = false;
     const kb = Keyboard({ small: false });
-    const card = h('div', { class: 'name-card' }, h('span', { class: 'nc-label' }, 'My name card'), h('span', { class: 'nc-name' }, name));
+    const card = h('div', { class: 'name-card', 'data-say': 'Your name is ' + name }, h('span', { class: 'nc-label' }, 'My name card'), h('span', { class: 'nc-name' }, name));
     const box = h('div', { class: 'type-box' });
     api.stage.append(h('div', { class: 'typename' }, card, box, kb.el));
     let cells = [];
