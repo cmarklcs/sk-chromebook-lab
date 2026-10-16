@@ -75,9 +75,9 @@ function teacherPage(mount) {
   const saveName = h('button', { class: 'tp-btn' }, 'Save name');
   saveName.addEventListener('click', () => { const n = cleanName(nameIn.value); if (n) { Store.set('name', n); nameIn.value = n; toast('Saved: ' + n); } });
   const reset = h('button', { class: 'tp-btn warn' }, 'Reset stars');
-  reset.addEventListener('click', () => { if (confirm('Clear all stars on this Chromebook?')) { Progress.reset(); App.route(true); } });
+  reset.addEventListener('click', () => { if (confirm('Clear all stars for this student?')) { Progress.reset(); App.route(true); } });
   const delBook = h('button', { class: 'tp-btn warn' }, 'Delete practice book');
-  delBook.addEventListener('click', () => { if (confirm('Delete the practice book on this Chromebook?')) { Store.remove('book'); toast('Practice book deleted'); } });
+  delBook.addEventListener('click', () => { if (confirm('Delete this student’s practice book?')) { Store.remove('book'); toast('Practice book deleted'); } });
   const printList = h('button', { class: 'tp-btn' }, '🖨️ Print skills checklist');
   printList.addEventListener('click', () => { document.body.classList.add('print-checklist'); window.print(); setTimeout(() => document.body.classList.remove('print-checklist'), 500); });
 
@@ -127,10 +127,10 @@ function teacherPage(mount) {
       h('p', { class: 'tp-note' }, '💡 ' + w.note))),
 
     h('section', { class: 'tp-card' },
-      h('h2', null, 'This Chromebook'),
-      h('p', null, 'Each Chromebook remembers one student’s name (used in the name games and certificate), their stars, and their practice book. Set the name once, on the student’s numbered Chromebook. You can also open the site with ', h('code', null, '?name=Easton'), ' at the end of the address to set it.'),
+      h('h2', null, 'This student’s sign-in'),
+      h('p', null, 'The site saves each student’s name (used in the name games and certificate), stars and practice book under their Chrome sign-in on this Chromebook. Several students can share a device without mixing up progress, but saved work does not follow a student to a different Chromebook, so keep each child on their numbered device. Set a name here while signed in as that student, or add ', h('code', null, '?name=Easton'), ' to the end of the address.'),
       h('div', { class: 'tp-row' }, nameIn, saveName),
-      h('p', null, `Stars on this Chromebook: ⭐ ${Progress.total()}`),
+      h('p', null, `Stars for this student: ⭐ ${Progress.total()}`),
       h('div', { class: 'tp-row' }, reset, delBook)),
 
     h('section', { class: 'tp-card checklist' },

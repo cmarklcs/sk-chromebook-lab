@@ -16,7 +16,7 @@ The teacher guide is at `#/teacher`: week plans, practice-game links, device set
 ## Notes
 
 - Every direction is read aloud with the browser's built-in voice; 🔊 repeats it.
-- Each Chromebook stores its student's name, stars and practice book in the browser (localStorage). No student data leaves the device. Set the name on the Teacher page or by adding `?name=Easton` to the address.
+- Each student's name, stars and practice book are saved in the browser under their Chrome sign-in (localStorage). Students sharing a Chromebook don't mix up progress, but saved work doesn't follow them to another device. No student data leaves the device. Set the name on the Teacher page or by adding `?name=Easton` to the address.
 - Camera and microphone (Week 5) need permission the first time.
 
 ## Editing

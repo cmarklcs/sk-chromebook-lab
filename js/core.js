@@ -139,7 +139,7 @@ function updateStarTotal() {
   if (el) el.textContent = '⭐ ' + Progress.total();
 }
 
-/* ---------- student name (saved on this Chromebook) ---------- */
+/* ---------- student name (saved in this browser profile) ---------- */
 function cleanName(s) {
   s = (s || '').replace(/[^A-Za-z \-']/g, '').trim().slice(0, 20);
   return s ? s[0].toUpperCase() + s.slice(1) : '';

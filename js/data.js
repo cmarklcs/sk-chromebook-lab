@@ -53,7 +53,7 @@ const WEEKS = [
     ],
     success: 'Types most of the letters in their first name using their name card.',
     struggle: 'Let them type only the first letter, use letter stickers on the keys, and pair with a buddy who finds the next letter.',
-    note: 'Color My Name is the on-screen version of the printed keyboard name sheets: same key layout, lowercase like the real Chromebook keys. Each Chromebook remembers the name typed in, so set it once per device.'
+    note: 'Color My Name is the on-screen version of the printed keyboard name sheets: same key layout, lowercase like the real Chromebook keys. The site remembers the name under each student’s Chrome sign-in, so it only needs typing once.'
   },
   {
     n: 4, emoji: '📘', color: '#F26B21',
@@ -108,7 +108,7 @@ const WEEKS = [
     ],
     success: 'Logs in and opens their book independently, plays it, and can say one of the two rules.',
     struggle: 'Pair with a buddy for the share, and accept a book of one or two pages as finished.',
-    note: 'The certificate prints one per page with the student’s name and star count from this Chromebook.'
+    note: 'The certificate prints one per page with the student’s name and star count.'
   }
 ];
 
@@ -123,7 +123,7 @@ const BEFORE_YOU_BEGIN = [
   'Book Creator library set up through Clever (Week 4)',
   'A classroom helper for Weeks 1 and 4',
   'A spot for the lid-and-charger routine',
-  'Each student’s name typed into this site on their Chromebook (Teacher page ▸ This Chromebook)',
+  'Each student’s name typed into this site once, while signed in as that student',
   'Printed skills checklist (bottom of this page)'
 ];
 
